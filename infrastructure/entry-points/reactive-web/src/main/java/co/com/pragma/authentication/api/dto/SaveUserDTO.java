@@ -7,9 +7,9 @@ import java.time.LocalDate;
 
 public record SaveUserDTO(@NotNull String name,
                           @NotNull String surname,
-                          @NotNull LocalDate dateOfBirth,
+                          LocalDate dateOfBirth,
                           @NotNull String email,
-                          @NotNull String docNumber,
-                          @NotNull String cellphone,
+                          String docNumber,
+                          String cellphone,
                           @NotNull BigDecimal salaryBase) {
 }

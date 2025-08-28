@@ -34,15 +34,12 @@ class RouterRestTest {
 
     @BeforeEach
     void setup() {
-        // Set up the mock for the path
         when(userPath.getUsers()).thenReturn("/api/v1/usuarios");
-        // Initialize WebTestClient with your router function
         webTestClient = WebTestClient.bindToRouterFunction(routerRest.routerFunction(handler)).build();
     }
 
     @Test
     void testSaveUser_shouldReturnOkResponse_whenHandlerSucceeds() {
-        // Mock the handler to return a successful response
         when(handler.listenPOSTUseCase(any()))
                 .thenReturn(Mono.just(ServerResponse.ok().bodyValue("Successful").block()));
 
@@ -63,7 +60,6 @@ class RouterRestTest {
 
     @Test
     void testSaveUser_shouldReturnBadRequest_whenHandlerReturnsError() {
-        // Mock the handler to return a 400 Bad Request response
         when(handler.listenPOSTUseCase(any()))
                 .thenReturn(Mono.just(ServerResponse.badRequest().bodyValue("Validation error").block()));
 
@@ -82,47 +78,4 @@ class RouterRestTest {
                 .isEqualTo("Validation error");
     }
 
-/*
-    @Test
-    void testListenGETUseCase() {
-        webTestClient.get()
-                .uri("/api/usecase/path")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
-                        }
-                );
-    }
-
-    @Test
-    void testListenGETOtherUseCase() {
-        webTestClient.get()
-                .uri("/api/otherusercase/path")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
-                        }
-                );
-    }
-
-    @Test
-    void testListenPOSTUseCase() {
-        webTestClient.post()
-                .uri("/api/usecase/otherpath")
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue("")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
-                        }
-                );
-    }*/
 }

@@ -17,12 +17,29 @@ public class UserUseCase {
     private final UserRepository userRepository;
 
     public Mono<Void> saveUser(User newUser) {
-        return validateSalary(newUser)
-                .then(validateEmailDomain(newUser))
+        return validateRequiredFields(newUser)
+                .then(Mono.defer(() -> validateSalary(newUser)))
+                .then(Mono.defer(() -> validateEmailDomain(newUser)))
                 .then(Mono.defer(() -> userRepository.findByEmail(newUser.getEmail())))
                 .flatMap(existingUser -> Mono.error(new UserAlreadyExistsException("The email already exists.")))
                 .switchIfEmpty(Mono.defer(() -> userRepository.save(newUser)))
                 .then();
+    }
+
+    private Mono<Void> validateRequiredFields(User user) {
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            return Mono.error(new InvalidInputDataException("Name cannot be null or empty."));
+        }
+        if (user.getSurname() == null || user.getSurname().trim().isEmpty()) {
+            return Mono.error(new InvalidInputDataException("Surname cannot be null or empty."));
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            return Mono.error(new InvalidInputDataException("Email cannot be null or empty."));
+        }
+        if (user.getSalaryBase() == null) {
+            return Mono.error(new InvalidInputDataException("Salary base cannot be null."));
+        }
+        return Mono.empty();
     }
 
     private Mono<Void> validateSalary(User user) {

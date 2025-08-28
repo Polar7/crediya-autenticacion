@@ -61,19 +61,14 @@ class HandlerTest {
 
     @Test
     void listenPOSTUseCase_shouldReturnOkResponse_whenAllSucceed() {
-        // Mock the request body
         when(serverRequest.bodyToMono(SaveUserDTO.class)).thenReturn(Mono.just(saveUserDTO));
 
-        // Mock the successful validation flow
         when(validationUtil.validate(any(SaveUserDTO.class))).thenReturn(Mono.just(saveUserDTO));
 
-        // Mock the successful mapping
         when(userMapper.toModel(any(SaveUserDTO.class))).thenReturn(userModel);
 
-        // Mock the successful use case
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.empty());
 
-        // Use StepVerifier to test the Mono<ServerResponse>
         Mono<ServerResponse> responseMono = handler.listenPOSTUseCase(serverRequest);
 
         StepVerifier.create(responseMono)
@@ -83,14 +78,11 @@ class HandlerTest {
 
     @Test
     void listenPOSTUseCase_shouldPropagateError_whenValidationFails() {
-        // Mock the request body
         when(serverRequest.bodyToMono(SaveUserDTO.class)).thenReturn(Mono.just(saveUserDTO));
 
-        // Mock the validation failure
         when(validationUtil.validate(any(SaveUserDTO.class)))
                 .thenReturn(Mono.error(new ValidationException("Validation failed")));
 
-        // The Mono from the handler should emit an error
         Mono<ServerResponse> responseMono = handler.listenPOSTUseCase(serverRequest);
 
         StepVerifier.create(responseMono)

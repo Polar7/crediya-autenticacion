@@ -50,30 +50,24 @@ class UserReactiveRepositoryAdapterTest {
 
     @Test
     void shouldSaveUserSuccessfully() {
-        // Mock the repository save call to return the UserEntity
         when(userReactiveRepository.save(any(UserEntity.class))).thenReturn(Mono.just(sampleUserEntity));
         when(objectMapper.map(any(User.class), any(Class.class))).thenReturn(sampleUserEntity);
         when(objectMapper.map(any(UserEntity.class), any(Class.class))).thenReturn(sampleUser);
 
-        // Call the adapter's save method
         Mono<User> result = userAdapter.save(sampleUser);
 
-        // Verify the result with StepVerifier
         StepVerifier.create(result)
                 .expectNextMatches(savedUser -> savedUser.getEmail().equals(sampleUser.getEmail()))
                 .verifyComplete();
 
-        // Verify that the repository's save method was called exactly once
         verify(userReactiveRepository, times(1)).save(any(UserEntity.class));
     }
 
     @Test
     void findByEmail_shouldReturnUser_whenFound() {
 
-        // Mock the reactive repository call
         when(userReactiveRepository.findByEmail(sampleUser.getEmail())).thenReturn(Mono.just(sampleUserEntity));
 
-        // Mock the ObjectMapper call only for this test
         when(objectMapper.map(any(UserEntity.class), any(Class.class))).thenReturn(sampleUser);
 
         StepVerifier.create(userAdapter.findByEmail(sampleUser.getEmail()))
@@ -83,7 +77,6 @@ class UserReactiveRepositoryAdapterTest {
 
     @Test
     void findByEmail_shouldReturnEmpty_whenNotFound() {
-        // Mock the reactive repository call, which is the only dependency needed here
         when(userReactiveRepository.findByEmail(any(String.class))).thenReturn(Mono.empty());
 
         StepVerifier.create(userAdapter.findByEmail("non-existent@email.com"))

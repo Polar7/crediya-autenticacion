@@ -2,8 +2,10 @@ package co.com.pragma.authentication.usecase.user;
 
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
+import co.com.pragma.authentication.usecase.exception.InvalidInputDataException;
 import co.com.pragma.authentication.usecase.exception.UserAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +35,7 @@ class UserUseCaseTest {
     void setup() {
         validUser = User.builder()
                 .name("John")
+                .surname("Doe")
                 .email("john.doe@bancolombia.com")
                 .salaryBase(new BigDecimal("10000000"))
                 .build();
@@ -56,7 +59,7 @@ class UserUseCaseTest {
 
         StepVerifier.create(userUseCase.saveUser(invalidSalaryUser))
                 .expectErrorMatches(throwable ->
-                        throwable instanceof RuntimeException &&
+                        throwable instanceof InvalidInputDataException &&
                                 throwable.getMessage().equals("The salary cannot exceed 15'000.000")
                 )
                 .verify();
@@ -72,7 +75,7 @@ class UserUseCaseTest {
 
         StepVerifier.create(userUseCase.saveUser(invalidEmailUser))
                 .expectErrorMatches(throwable ->
-                        throwable instanceof RuntimeException &&
+                        throwable instanceof InvalidInputDataException &&
                                 throwable.getMessage().equals("The email must be from an authorized domain.")
                 )
                 .verify();
@@ -91,6 +94,99 @@ class UserUseCaseTest {
                 .verify();
 
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Nested
+    class ValidateRequiredFields {
+        @Test
+        void shouldThrowExceptionWhenNameIsNull() {
+            User invalidUser = validUser.toBuilder()
+                    .name(null)
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Name cannot be null or empty.")
+                    )
+                    .verify();
+
+            invalidUser = validUser.toBuilder()
+                    .name("")
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Name cannot be null or empty.")
+                    )
+                    .verify();
+        }
+
+        @Test
+        void shouldThrowExceptionWhenSurnameIsNull() {
+            User invalidUser = validUser.toBuilder()
+                    .surname(null)
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Surname cannot be null or empty.")
+                    )
+                    .verify();
+
+            invalidUser = validUser.toBuilder()
+                    .surname("")
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Surname cannot be null or empty.")
+                    )
+                    .verify();
+        }
+
+        @Test
+        void shouldThrowExceptionWhenEmailIsNull() {
+            User invalidUser = validUser.toBuilder()
+                    .email(null)
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Email cannot be null or empty.")
+                    )
+                    .verify();
+
+            invalidUser = validUser.toBuilder()
+                    .email("")
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Email cannot be null or empty.")
+                    )
+                    .verify();
+        }
+
+        @Test
+        void shouldThrowExceptionWhenSalaryBaseIsNull() {
+            User invalidUser = validUser.toBuilder()
+                    .salaryBase(null)
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("Salary base cannot be null.")
+                    )
+                    .verify();
+        }
+
     }
 
 }
