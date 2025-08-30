@@ -17,7 +17,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "http://localhost:4200,http://localhost:8090"
 
 adapters:
   r2dbc:
@@ -31,3 +31,4 @@ adapters:
 routes:
   paths:
     users: "/api/v1/usuarios"
+    userByDocument: "/api/v1/usuarios/{docNumber}"

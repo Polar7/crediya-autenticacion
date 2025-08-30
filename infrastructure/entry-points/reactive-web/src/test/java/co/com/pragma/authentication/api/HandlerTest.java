@@ -1,6 +1,6 @@
 package co.com.pragma.authentication.api;
 
-import co.com.pragma.authentication.api.dto.SaveUserDTO;
+import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
 import co.com.pragma.authentication.api.mapper.UserMapper;
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.usecase.user.UserUseCase;
@@ -42,12 +42,12 @@ class HandlerTest {
     @InjectMocks
     private Handler handler;
 
-    private SaveUserDTO saveUserDTO;
+    private SaveUserRequestDTO saveUserRequestDTO;
     private User userModel;
 
     @BeforeEach
     void setUp() {
-        saveUserDTO = new SaveUserDTO(
+        saveUserRequestDTO = new SaveUserRequestDTO(
                 "John", "Doe", LocalDate.of(1990, 1, 1),
                 "john.doe@example.com", "12345", "123456789",
                 new BigDecimal("1500000")
@@ -60,16 +60,16 @@ class HandlerTest {
     }
 
     @Test
-    void listenPOSTUseCase_shouldReturnOkResponse_whenAllSucceed() {
-        when(serverRequest.bodyToMono(SaveUserDTO.class)).thenReturn(Mono.just(saveUserDTO));
+    void listenPOSTSaveUser_shouldReturnOkResponse_whenAllSucceed() {
+        when(serverRequest.bodyToMono(SaveUserRequestDTO.class)).thenReturn(Mono.just(saveUserRequestDTO));
 
-        when(validationUtil.validate(any(SaveUserDTO.class))).thenReturn(Mono.just(saveUserDTO));
+        when(validationUtil.validate(any(SaveUserRequestDTO.class))).thenReturn(Mono.just(saveUserRequestDTO));
 
-        when(userMapper.toModel(any(SaveUserDTO.class))).thenReturn(userModel);
+        when(userMapper.toModel(any(SaveUserRequestDTO.class))).thenReturn(userModel);
 
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.empty());
 
-        Mono<ServerResponse> responseMono = handler.listenPOSTUseCase(serverRequest);
+        Mono<ServerResponse> responseMono = handler.listenPOSTSaveUser(serverRequest);
 
         StepVerifier.create(responseMono)
                 .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.OK))
@@ -78,12 +78,12 @@ class HandlerTest {
 
     @Test
     void listenPOSTUseCase_shouldPropagateError_whenValidationFails() {
-        when(serverRequest.bodyToMono(SaveUserDTO.class)).thenReturn(Mono.just(saveUserDTO));
+        when(serverRequest.bodyToMono(SaveUserRequestDTO.class)).thenReturn(Mono.just(saveUserRequestDTO));
 
-        when(validationUtil.validate(any(SaveUserDTO.class)))
+        when(validationUtil.validate(any(SaveUserRequestDTO.class)))
                 .thenReturn(Mono.error(new ValidationException("Validation failed")));
 
-        Mono<ServerResponse> responseMono = handler.listenPOSTUseCase(serverRequest);
+        Mono<ServerResponse> responseMono = handler.listenPOSTSaveUser(serverRequest);
 
         StepVerifier.create(responseMono)
                 .expectErrorMatches(throwable ->

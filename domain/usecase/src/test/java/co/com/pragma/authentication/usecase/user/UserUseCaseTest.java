@@ -1,6 +1,7 @@
 package co.com.pragma.authentication.usecase.user;
 
 import co.com.pragma.authentication.model.user.User;
+import co.com.pragma.authentication.model.user.UserExistence;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
 import co.com.pragma.authentication.usecase.exception.InvalidInputDataException;
 import co.com.pragma.authentication.usecase.exception.UserAlreadyExistsException;
@@ -41,63 +42,91 @@ class UserUseCaseTest {
                 .build();
     }
 
-    @Test
-    void shouldSaveUserSuccessfully() {
-        when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Mono.empty());
-        when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
+    @Nested
+    class FindEmailUserByDocNumber {
 
-        StepVerifier.create(userUseCase.saveUser(validUser))
-                .expectComplete()
-                .verify();
-    }
+        @Test
+        void shouldReturnUser() {
+            when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.just(validUser));
 
-    @Test
-    void shouldThrowExceptionWhenSalaryIsExceeded() {
-        User invalidSalaryUser = validUser.toBuilder()
-                .salaryBase(new BigDecimal("16000000"))
-                .build();
+            StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
+                    .expectNext(new UserExistence(true, validUser.getEmail()))
+                    .verifyComplete();
+        }
 
-        StepVerifier.create(userUseCase.saveUser(invalidSalaryUser))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof InvalidInputDataException &&
-                                throwable.getMessage().equals("The salary cannot exceed 15'000.000")
-                )
-                .verify();
+        @Test
+        void shouldReturnUserNotFound() {
+            when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.empty());
 
-        verify(userRepository, never()).findByEmail(anyString());
-    }
+            StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
+                    .expectNext(new UserExistence(false, null))
+                    .verifyComplete();
+        }
 
-    @Test
-    void shouldThrowExceptionWhenEmailDomainIsInvalid() {
-        User invalidEmailUser = validUser.toBuilder()
-                .email("john.doe@gmail.com")
-                .build();
-
-        StepVerifier.create(userUseCase.saveUser(invalidEmailUser))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof InvalidInputDataException &&
-                                throwable.getMessage().equals("The email must be from an authorized domain.")
-                )
-                .verify();
-
-        verify(userRepository, never()).findByEmail(anyString());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenEmailAlreadyExists() {
-        User existingUser = validUser.toBuilder().build();
-
-        when(userRepository.findByEmail(existingUser.getEmail())).thenReturn(Mono.just(existingUser));
-
-        StepVerifier.create(userUseCase.saveUser(existingUser))
-                .expectError(UserAlreadyExistsException.class)
-                .verify();
-
-        verify(userRepository, never()).save(any(User.class));
     }
 
     @Nested
-    class ValidateRequiredFields {
+    class SaveUser {
+
+        @Test
+        void shouldSaveUserSuccessfully() {
+            when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Mono.empty());
+            when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
+
+            StepVerifier.create(userUseCase.saveUser(validUser))
+                    .expectComplete()
+                    .verify();
+        }
+
+        @Test
+        void shouldThrowExceptionWhenSalaryIsExceeded() {
+            User invalidSalaryUser = validUser.toBuilder()
+                    .salaryBase(new BigDecimal("16000000"))
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidSalaryUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("The salary cannot exceed 15'000.000")
+                    )
+                    .verify();
+
+            verify(userRepository, never()).findByEmail(anyString());
+        }
+
+        @Test
+        void shouldThrowExceptionWhenEmailDomainIsInvalid() {
+            User invalidEmailUser = validUser.toBuilder()
+                    .email("john.doe@gmail.com")
+                    .build();
+
+            StepVerifier.create(userUseCase.saveUser(invalidEmailUser))
+                    .expectErrorMatches(throwable ->
+                            throwable instanceof InvalidInputDataException &&
+                                    throwable.getMessage().equals("The email must be from an authorized domain.")
+                    )
+                    .verify();
+
+            verify(userRepository, never()).findByEmail(anyString());
+        }
+
+        @Test
+        void shouldThrowExceptionWhenEmailAlreadyExists() {
+            User existingUser = validUser.toBuilder().build();
+
+            when(userRepository.findByEmail(existingUser.getEmail())).thenReturn(Mono.just(existingUser));
+
+            StepVerifier.create(userUseCase.saveUser(existingUser))
+                    .expectError(UserAlreadyExistsException.class)
+                    .verify();
+
+            verify(userRepository, never()).save(any(User.class));
+        }
+
+    }
+
+    @Nested
+    class ValidateRequiredFieldsInSaveUser {
         @Test
         void shouldThrowExceptionWhenNameIsNull() {
             User invalidUser = validUser.toBuilder()

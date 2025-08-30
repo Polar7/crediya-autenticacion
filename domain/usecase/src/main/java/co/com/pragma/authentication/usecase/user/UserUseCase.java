@@ -1,6 +1,7 @@
 package co.com.pragma.authentication.usecase.user;
 
 import co.com.pragma.authentication.model.user.User;
+import co.com.pragma.authentication.model.user.UserExistence;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
 import co.com.pragma.authentication.usecase.exception.InvalidInputDataException;
 import co.com.pragma.authentication.usecase.exception.UserAlreadyExistsException;
@@ -15,6 +16,12 @@ import java.util.List;
 public class UserUseCase {
 
     private final UserRepository userRepository;
+
+    public Mono<UserExistence> findEmailUserByDocNumber(String docNumber) {
+        return userRepository.findByDocNumber(docNumber)
+                .map(user -> new UserExistence(true, user.getEmail()))
+                .switchIfEmpty(Mono.just(new UserExistence(false, null)));
+    }
 
     public Mono<Void> saveUser(User newUser) {
         return validateRequiredFields(newUser)

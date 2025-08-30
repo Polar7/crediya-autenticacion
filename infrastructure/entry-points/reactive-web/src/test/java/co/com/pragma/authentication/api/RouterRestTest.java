@@ -1,7 +1,7 @@
 package co.com.pragma.authentication.api;
 
 import co.com.pragma.authentication.api.config.UserPath;
-import co.com.pragma.authentication.api.dto.SaveUserDTO;
+import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,15 +35,16 @@ class RouterRestTest {
     @BeforeEach
     void setup() {
         when(userPath.getUsers()).thenReturn("/api/v1/usuarios");
+        when(userPath.getUserByDocument()).thenReturn("/api/v1/usuarios/{docNumber}");
         webTestClient = WebTestClient.bindToRouterFunction(routerRest.routerFunction(handler)).build();
     }
 
     @Test
     void testSaveUser_shouldReturnOkResponse_whenHandlerSucceeds() {
-        when(handler.listenPOSTUseCase(any()))
+        when(handler.listenPOSTSaveUser(any()))
                 .thenReturn(Mono.just(ServerResponse.ok().bodyValue("Successful").block()));
 
-        SaveUserDTO userDto = new SaveUserDTO(
+        SaveUserRequestDTO userDto = new SaveUserRequestDTO(
                 "John", "Doe", LocalDate.of(1990, 1, 1),
                 "john.doe@example.com", "12345", "123456789",
                 new BigDecimal("1500000")
@@ -60,10 +61,10 @@ class RouterRestTest {
 
     @Test
     void testSaveUser_shouldReturnBadRequest_whenHandlerReturnsError() {
-        when(handler.listenPOSTUseCase(any()))
+        when(handler.listenPOSTSaveUser(any()))
                 .thenReturn(Mono.just(ServerResponse.badRequest().bodyValue("Validation error").block()));
 
-        SaveUserDTO userDto = new SaveUserDTO(
+        SaveUserRequestDTO userDto = new SaveUserRequestDTO(
                 "John", "Doe", LocalDate.of(1990, 1, 1),
                 "john.doe@example.com", "12345", "123456789",
                 new BigDecimal("1500000")

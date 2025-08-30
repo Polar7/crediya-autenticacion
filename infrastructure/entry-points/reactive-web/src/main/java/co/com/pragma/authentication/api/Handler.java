@@ -1,7 +1,8 @@
 package co.com.pragma.authentication.api;
 
 import co.com.pragma.authentication.api.dto.GenericResponseDto;
-import co.com.pragma.authentication.api.dto.SaveUserDTO;
+import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
+import co.com.pragma.authentication.api.dto.UserExistenceResponseDto;
 import co.com.pragma.authentication.api.mapper.UserMapper;
 import co.com.pragma.authentication.usecase.user.UserUseCase;
 import co.com.pragma.authentication.validation.ValidationUtil;
@@ -25,9 +26,22 @@ public class Handler {
 
     private final ValidationUtil validationUtil;
 
-    public Mono<ServerResponse> listenPOSTUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenGETByDocNumberUser(ServerRequest serverRequest) {
+        log.info("Received GET request Find user by document number");
+
+        String docNumber = serverRequest.pathVariable("docNumber");
+
+        return userUseCase.findEmailUserByDocNumber(docNumber)
+                .doOnSuccess(aVoid -> log.info("Finish find user by document number"))
+                .map(userExistence -> GenericResponseDto.of(HttpStatus.OK.value(), "OK", userExistence))
+                .flatMap(response -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> listenPOSTSaveUser(ServerRequest serverRequest) {
         log.info("Received POST request save user");
-        return serverRequest.bodyToMono(SaveUserDTO.class)
+        return serverRequest.bodyToMono(SaveUserRequestDTO.class)
                 .flatMap(validationUtil::validate)
                 .map(userMapper::toModel)
                 .flatMap(userUseCase::saveUser)
