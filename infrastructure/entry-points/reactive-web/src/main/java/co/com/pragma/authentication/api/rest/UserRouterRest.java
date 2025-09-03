@@ -1,7 +1,7 @@
-package co.com.pragma.authentication.api;
+package co.com.pragma.authentication.api.rest;
 
+import co.com.pragma.authentication.api.handler.UserHandler;
 import co.com.pragma.authentication.api.config.UserPath;
-import co.com.pragma.authentication.api.dto.GenericResponseDto;
 import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
 import co.com.pragma.authentication.model.user.UserExistence;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,13 +28,12 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 @RequiredArgsConstructor
-public class RouterRest {
+public class UserRouterRest {
 
     private final UserPath userPath;
 
     @Bean
     @RouterOperations({
-            // Operation for POST /users (your existing endpoint)
             @RouterOperation(path = "/api/v1/usuarios",
                     produces = "application/json",
                     method = POST,
@@ -102,9 +101,9 @@ public class RouterRest {
                             }
                     ))
     })
-    public RouterFunction<ServerResponse> routerFunction(Handler handler) {
-        return route(POST(userPath.getUsers()), handler::listenPOSTSaveUser)
-                .andRoute(GET(userPath.getUserByDocument()), handler::listenGETByDocNumberUser);
+    public RouterFunction<ServerResponse> userRouterFunction(UserHandler userHandler) {
+        return route(POST(userPath.getUsers()), userHandler::listenPOSTSaveUser)
+                .andRoute(GET(userPath.getUserByDocument()), userHandler::listenGETByDocNumberUser);
     }
 
 }

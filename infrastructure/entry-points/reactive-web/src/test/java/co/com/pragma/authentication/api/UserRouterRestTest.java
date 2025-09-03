@@ -2,6 +2,8 @@ package co.com.pragma.authentication.api;
 
 import co.com.pragma.authentication.api.config.UserPath;
 import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
+import co.com.pragma.authentication.api.handler.UserHandler;
+import co.com.pragma.authentication.api.rest.UserRouterRest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,29 +21,29 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RouterRestTest {
+class UserRouterRestTest {
 
     private WebTestClient webTestClient;
 
     @Mock
-    private Handler handler;
+    private UserHandler userHandler;
 
     @Mock
     private UserPath userPath;
 
     @InjectMocks
-    private RouterRest routerRest;
+    private UserRouterRest userRouterRest;
 
     @BeforeEach
     void setup() {
         when(userPath.getUsers()).thenReturn("/api/v1/usuarios");
         when(userPath.getUserByDocument()).thenReturn("/api/v1/usuarios/{docNumber}");
-        webTestClient = WebTestClient.bindToRouterFunction(routerRest.routerFunction(handler)).build();
+        webTestClient = WebTestClient.bindToRouterFunction(userRouterRest.userRouterFunction(userHandler)).build();
     }
 
     @Test
     void testSaveUser_shouldReturnOkResponse_whenHandlerSucceeds() {
-        when(handler.listenPOSTSaveUser(any()))
+        when(userHandler.listenPOSTSaveUser(any()))
                 .thenReturn(Mono.just(ServerResponse.ok().bodyValue("Successful").block()));
 
         SaveUserRequestDTO userDto = new SaveUserRequestDTO(
@@ -61,7 +63,7 @@ class RouterRestTest {
 
     @Test
     void testSaveUser_shouldReturnBadRequest_whenHandlerReturnsError() {
-        when(handler.listenPOSTSaveUser(any()))
+        when(userHandler.listenPOSTSaveUser(any()))
                 .thenReturn(Mono.just(ServerResponse.badRequest().bodyValue("Validation error").block()));
 
         SaveUserRequestDTO userDto = new SaveUserRequestDTO(

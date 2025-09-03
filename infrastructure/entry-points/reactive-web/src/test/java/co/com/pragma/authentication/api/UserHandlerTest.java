@@ -1,6 +1,7 @@
 package co.com.pragma.authentication.api;
 
 import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
+import co.com.pragma.authentication.api.handler.UserHandler;
 import co.com.pragma.authentication.api.mapper.UserMapper;
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.usecase.user.UserUseCase;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class HandlerTest {
+class UserHandlerTest {
 
     @Mock
     private UserUseCase userUseCase;
@@ -40,7 +41,7 @@ class HandlerTest {
     private ServerRequest serverRequest;
 
     @InjectMocks
-    private Handler handler;
+    private UserHandler userHandler;
 
     private SaveUserRequestDTO saveUserRequestDTO;
     private User userModel;
@@ -69,7 +70,7 @@ class HandlerTest {
 
         when(userUseCase.saveUser(any(User.class))).thenReturn(Mono.empty());
 
-        Mono<ServerResponse> responseMono = handler.listenPOSTSaveUser(serverRequest);
+        Mono<ServerResponse> responseMono = userHandler.listenPOSTSaveUser(serverRequest);
 
         StepVerifier.create(responseMono)
                 .expectNextMatches(serverResponse -> serverResponse.statusCode().equals(HttpStatus.OK))
@@ -83,7 +84,7 @@ class HandlerTest {
         when(validationUtil.validate(any(SaveUserRequestDTO.class)))
                 .thenReturn(Mono.error(new ValidationException("Validation failed")));
 
-        Mono<ServerResponse> responseMono = handler.listenPOSTSaveUser(serverRequest);
+        Mono<ServerResponse> responseMono = userHandler.listenPOSTSaveUser(serverRequest);
 
         StepVerifier.create(responseMono)
                 .expectErrorMatches(throwable ->

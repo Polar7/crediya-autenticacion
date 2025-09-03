@@ -1,8 +1,7 @@
-package co.com.pragma.authentication.api;
+package co.com.pragma.authentication.api.handler;
 
 import co.com.pragma.authentication.api.dto.GenericResponseDto;
 import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
-import co.com.pragma.authentication.api.dto.UserExistenceResponseDto;
 import co.com.pragma.authentication.api.mapper.UserMapper;
 import co.com.pragma.authentication.usecase.user.UserUseCase;
 import co.com.pragma.authentication.validation.ValidationUtil;
@@ -18,7 +17,7 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class Handler {
+public class UserHandler {
 
     private final UserUseCase userUseCase;
 

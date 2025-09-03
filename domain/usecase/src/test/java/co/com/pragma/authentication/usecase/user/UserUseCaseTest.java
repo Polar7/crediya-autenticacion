@@ -1,5 +1,7 @@
 package co.com.pragma.authentication.usecase.user;
 
+import co.com.pragma.authentication.model.rol.Rol;
+import co.com.pragma.authentication.model.rol.gateways.RolRepository;
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.model.user.UserExistence;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
@@ -24,13 +26,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserUseCaseTest {
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
-    private UserUseCase userUseCase;
+    UserUseCase userUseCase;
 
-    private User validUser;
+    @Mock
+    UserRepository userRepository;
+
+    @Mock
+    RolRepository rolRepository;
+
+    User validUser;
 
     @BeforeEach
     void setup() {
@@ -50,7 +55,7 @@ class UserUseCaseTest {
             when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.just(validUser));
 
             StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
-                    .expectNext(new UserExistence(true, validUser.getEmail()))
+                    .expectNext(new UserExistence(true, validUser.getId(), validUser.getEmail()))
                     .verifyComplete();
         }
 
@@ -59,7 +64,7 @@ class UserUseCaseTest {
             when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.empty());
 
             StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
-                    .expectNext(new UserExistence(false, null))
+                    .expectNext(new UserExistence(false, null, null))
                     .verifyComplete();
         }
 
@@ -72,6 +77,7 @@ class UserUseCaseTest {
         void shouldSaveUserSuccessfully() {
             when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Mono.empty());
             when(userRepository.save(any(User.class))).thenReturn(Mono.just(validUser));
+            when(rolRepository.findByName(anyString())).thenReturn(Mono.just(new Rol(1L, "TEST", "TEST")));
 
             StepVerifier.create(userUseCase.saveUser(validUser))
                     .expectComplete()
