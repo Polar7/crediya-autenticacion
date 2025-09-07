@@ -88,8 +88,8 @@ public class UserUseCase {
     }
 
     private Mono<Long> getIdRolClient() {
-        return rolRepository.findByName(RolEnum.CLIENT.name())
-                .switchIfEmpty(Mono.error(new NotFoundException("Status not found")))
+        return rolRepository.findByName(RolEnum.CLIENT.getName())
+                .switchIfEmpty(Mono.error(new NotFoundException("Rol not found")))
                 .map(Rol::getId);
     }
 
