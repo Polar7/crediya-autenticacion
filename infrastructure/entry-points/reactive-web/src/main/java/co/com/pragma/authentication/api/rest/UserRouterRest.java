@@ -4,9 +4,11 @@ import co.com.pragma.authentication.api.handler.UserHandler;
 import co.com.pragma.authentication.api.config.UserPath;
 import co.com.pragma.authentication.api.dto.SaveUserRequestDTO;
 import co.com.pragma.authentication.model.user.UserExistence;
+import co.com.pragma.authentication.model.user.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -47,8 +49,6 @@ public class UserRouterRest {
                                     content = @Content(schema = @Schema(implementation = SaveUserRequestDTO.class))
                             ),
                             responses = {
-                                    @ApiResponse(responseCode = "200", description = "User saved successfully"),
-                                    @ApiResponse(responseCode = "400", description = "Bad request"),
                                     @ApiResponse(responseCode = "500", description = "Internal server error")
                             }
                     )),
@@ -79,6 +79,7 @@ public class UserRouterRest {
                                                                     value = """
                                                                             {
                                                                                 "found": true,
+                                                                                "id": 1L,
                                                                                 "email": "test@example.com"
                                                                             }
                                                                             """
@@ -88,6 +89,7 @@ public class UserRouterRest {
                                                                     value = """
                                                                             {
                                                                                 "found": false,
+                                                                                "id": null,
                                                                                 "email": null
                                                                             }
                                                                             """
@@ -95,15 +97,43 @@ public class UserRouterRest {
                                                     }
                                             )
                                     ),
-                                    @ApiResponse(responseCode = "400", description = "Bad request"),
-                                    @ApiResponse(responseCode = "404", description = "User not found"),
+                                    @ApiResponse(responseCode = "500", description = "Internal server error")
+                            }
+                    )),
+            @RouterOperation(path = "/api/v1/usuarios/emails",
+                    produces = "application/json",
+                    method = POST,
+                    operation = @Operation(
+                            operationId = "findUsersByEmails",
+                            summary = "Find users by list of emails",
+                            tags = {"Users"},
+                            requestBody = @RequestBody(
+                                    description = "List of emails to search",
+                                    required = true,
+                                    content = @Content(
+                                            array = @ArraySchema(schema = @Schema(type = "string")),
+                                            examples = @ExampleObject(
+                                                    value = "[\"user1@example.com\", \"user2@example.com\"]"
+                                            )
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Users found",
+                                            content = @Content(
+                                                    mediaType = "application/json",
+                                                    array = @ArraySchema(schema = @Schema(implementation = UserInfo.class))
+                                            )
+                                    ),
                                     @ApiResponse(responseCode = "500", description = "Internal server error")
                             }
                     ))
     })
     public RouterFunction<ServerResponse> userRouterFunction(UserHandler userHandler) {
         return route(POST(userPath.getUsers()), userHandler::listenPOSTSaveUser)
-                .andRoute(GET(userPath.getUserByDocument()), userHandler::listenGETByDocNumberUser);
+                .andRoute(GET(userPath.getUserByDocument()), userHandler::listenGETFindUserByDocNumber)
+                .andRoute(POST(userPath.getUsersByEmails()), userHandler::listenPOSTFindUsersByEmails);
     }
 
 }

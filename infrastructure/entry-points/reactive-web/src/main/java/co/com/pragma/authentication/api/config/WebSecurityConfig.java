@@ -30,6 +30,7 @@ public class WebSecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/v1/autenticacion").permitAll()
                         .pathMatchers("/api/v1/usuarios").hasAnyRole(RolEnum.ADMIN.getName(), RolEnum.BANKER.getName())
+                        .pathMatchers("/api/v1/usuarios/emails").hasAnyRole(RolEnum.BANKER.getName())
                         .pathMatchers("/api/v1/usuarios/{docNumber}").hasAnyRole(
                                 RolEnum.CLIENT.getName(),
                                 RolEnum.BANKER.getName(),

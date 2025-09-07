@@ -14,6 +14,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -25,13 +27,13 @@ public class UserHandler {
 
     private final ValidationUtil validationUtil;
 
-    public Mono<ServerResponse> listenGETByDocNumberUser(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenGETFindUserByDocNumber(ServerRequest serverRequest) {
         log.info("Received GET request Find user by document number");
 
         String docNumber = serverRequest.pathVariable("docNumber");
 
         return userUseCase.findEmailUserByDocNumber(docNumber)
-                .doOnSuccess(aVoid -> log.info("Finish find user by document number"))
+                .doOnSuccess(userFound -> log.info("Finish find user by document number {}", userFound))
                 .map(userExistence -> GenericResponseDto.of(HttpStatus.OK.value(), "OK", userExistence))
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
@@ -46,6 +48,18 @@ public class UserHandler {
                 .flatMap(userUseCase::saveUser)
                 .doOnSuccess(aVoid -> log.info("User saved successfully"))
                 .thenReturn(GenericResponseDto.of(HttpStatus.OK.value(), "OK", "Saved successful"))
+                .flatMap(response -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response));
+    }
+
+    public Mono<ServerResponse> listenPOSTFindUsersByEmails(ServerRequest serverRequest) {
+        log.info("Received GET request Find users by emails");
+
+        return serverRequest.bodyToMono(List.class)
+                .flatMap(userUseCase::findUsersByEmails)
+                .doOnSuccess(usersFound -> log.info("Finish find users by emails {}", usersFound))
+                .map(emails -> GenericResponseDto.of(HttpStatus.OK.value(), "OK", emails))
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response));

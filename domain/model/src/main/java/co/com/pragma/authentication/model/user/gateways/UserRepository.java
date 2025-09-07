@@ -1,7 +1,10 @@
 package co.com.pragma.authentication.model.user.gateways;
 
 import co.com.pragma.authentication.model.user.User;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 public interface UserRepository {
 
@@ -10,5 +13,7 @@ public interface UserRepository {
     Mono<User> findByEmail(String email);
 
     Mono<User> findByDocNumber(String docNumber);
+
+    Flux<User> findAllByEmails(List<String> emails);
 
 }

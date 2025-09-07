@@ -31,6 +31,7 @@ adapters:
 routes:
   paths:
     users: "/api/v1/usuarios"
+    usersByEmails: "/api/v1/usuarios/emails"
     userByDocument: "/api/v1/usuarios/{docNumber}"
     auth: "/api/v1/autenticacion"
 

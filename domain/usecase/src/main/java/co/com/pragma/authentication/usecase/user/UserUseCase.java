@@ -5,6 +5,7 @@ import co.com.pragma.authentication.model.rol.RolEnum;
 import co.com.pragma.authentication.model.rol.gateways.RolRepository;
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.model.user.UserExistence;
+import co.com.pragma.authentication.model.user.UserInfo;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
 import co.com.pragma.authentication.usecase.exception.InvalidInputDataException;
 import co.com.pragma.authentication.usecase.exception.NotFoundException;
@@ -45,6 +46,12 @@ public class UserUseCase {
                                 })
                 )
                 .then();
+    }
+
+    public Mono<List<UserInfo>> findUsersByEmails(List<String> emails) {
+        return userRepository.findAllByEmails(emails)
+                .map(user -> new UserInfo(user.getEmail(), user.getName() + " " + user.getSurname(), user.getSalaryBase()))
+                .collectList();
     }
 
     private Mono<Void> validateRequiredFields(User user) {

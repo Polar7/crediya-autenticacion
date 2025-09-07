@@ -4,6 +4,7 @@ import co.com.pragma.authentication.model.rol.Rol;
 import co.com.pragma.authentication.model.rol.gateways.RolRepository;
 import co.com.pragma.authentication.model.user.User;
 import co.com.pragma.authentication.model.user.UserExistence;
+import co.com.pragma.authentication.model.user.UserInfo;
 import co.com.pragma.authentication.model.user.gateways.UserRepository;
 import co.com.pragma.authentication.usecase.exception.InvalidInputDataException;
 import co.com.pragma.authentication.usecase.exception.UserAlreadyExistsException;
@@ -14,10 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +48,51 @@ class UserUseCaseTest {
                 .email("john.doe@bancolombia.com")
                 .salaryBase(new BigDecimal("10000000"))
                 .build();
+    }
+
+    @Nested
+    class FindUsersByEmails {
+        @Test
+        void shouldReturnUserInfoListWhenEmailsAreFound() {
+            List<String> emails = List.of("test1@example.com", "test2@example.com");
+
+            User user1 = User.builder()
+                    .email("test1@example.com")
+                    .name("John")
+                    .surname("Doe")
+                    .salaryBase(new BigDecimal("50000"))
+                    .build();
+
+            User user2 = User.builder()
+                    .email("test2@example.com")
+                    .name("Jane")
+                    .surname("Smith")
+                    .salaryBase(new BigDecimal("60000"))
+                    .build();
+
+            when(userRepository.findAllByEmails(emails)).thenReturn(Flux.just(user1, user2));
+
+            StepVerifier.create(userUseCase.findUsersByEmails(emails))
+                    .expectNextMatches(userInfoList -> {
+                        if (userInfoList.size() != 2) return false;
+
+                        UserInfo info1 = userInfoList.get(0);
+                        if (!info1.email().equals("test1@example.com") ||
+                                !info1.fullName().equals("John Doe") ||
+                                info1.salaryBase().compareTo(new BigDecimal("50000")) != 0) {
+                            return false;
+                        }
+
+                        UserInfo info2 = userInfoList.get(1);
+                        if (!info2.email().equals("test2@example.com") ||
+                                !info2.fullName().equals("Jane Smith") ||
+                                info2.salaryBase().compareTo(new BigDecimal("60000")) != 0) {
+                            return false;
+                        }
+                        return true;
+                    })
+                    .verifyComplete();
+        }
     }
 
     @Nested

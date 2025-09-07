@@ -7,7 +7,10 @@ import co.com.pragma.authentication.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Repository
 public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
@@ -37,6 +40,11 @@ public class UserReactiveRepositoryAdapter extends ReactiveAdapterOperations<
     @Override
     public Mono<User> findByDocNumber(String docNumber) {
         return repository.findByDocNumber(docNumber).map(this::toEntity);
+    }
+
+    @Override
+    public Flux<User> findAllByEmails(List<String> emails) {
+        return repository.findAllByEmailIn(emails).map(this::toEntity);
     }
 
 }

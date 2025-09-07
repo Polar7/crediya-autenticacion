@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "routes.paths")
 public class UserPath {
     private String users;
+    private String usersByEmails;
     private String userByDocument;
 }
 
