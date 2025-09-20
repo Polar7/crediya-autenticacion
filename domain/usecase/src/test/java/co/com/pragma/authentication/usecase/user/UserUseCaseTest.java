@@ -103,7 +103,7 @@ class UserUseCaseTest {
             when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.just(validUser));
 
             StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
-                    .expectNext(new UserExistence(true, validUser.getId(), validUser.getEmail()))
+                    .expectNext(new UserExistence(true, validUser.getId(), validUser.getEmail(), validUser.getSalaryBase()))
                     .verifyComplete();
         }
 
@@ -112,7 +112,7 @@ class UserUseCaseTest {
             when(userRepository.findByDocNumber(validUser.getEmail())).thenReturn(Mono.empty());
 
             StepVerifier.create(userUseCase.findEmailUserByDocNumber(validUser.getEmail()))
-                    .expectNext(new UserExistence(false, null, null))
+                    .expectNext(new UserExistence(false, null, null, null))
                     .verifyComplete();
         }
 

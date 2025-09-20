@@ -1,6 +1,9 @@
 package co.com.pragma.authentication.model.user;
 
+import java.math.BigDecimal;
+
 public record UserExistence(boolean found,
                             Long id,
-                            String email) {
+                            String email,
+                            BigDecimal salary) {
 }

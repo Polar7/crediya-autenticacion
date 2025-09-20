@@ -27,8 +27,8 @@ public class UserUseCase {
 
     public Mono<UserExistence> findEmailUserByDocNumber(String docNumber) {
         return userRepository.findByDocNumber(docNumber)
-                .map(user -> new UserExistence(true, user.getId(), user.getEmail()))
-                .switchIfEmpty(Mono.just(new UserExistence(false, null, null)));
+                .map(user -> new UserExistence(true, user.getId(), user.getEmail(), user.getSalaryBase()))
+                .switchIfEmpty(Mono.just(new UserExistence(false, null, null, null)));
     }
 
     public Mono<Void> saveUser(User newUser) {
